@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const sensors = require('../data/sensors');
+const sensorData = require('../data/sensors');
 
 // GET /api/sensors - return all sensors
 router.get('/', function(req, res) {
+  var sensors = sensorData.getSensors();
   res.json({
     success: true,
     count: sensors.length,
@@ -13,6 +14,7 @@ router.get('/', function(req, res) {
 
 // GET /api/sensors/:id - return a single sensor by id
 router.get('/:id', function(req, res) {
+  var sensors = sensorData.getSensors();
   var sensor = sensors.find(function(s) {
     return s.id === req.params.id;
   });
@@ -32,18 +34,19 @@ router.get('/:id', function(req, res) {
 
 // POST /api/sensors/reading - submit a new reading
 router.post('/reading', function(req, res) {
+  var sensors = sensorData.getSensors();
   var sensorId = req.body.sensorId;
   var value = req.body.value;
 
-  // sensorId must be present and not an empty string
-  if (!sensorId || String(sensorId).trim() === '') {
+  // sensorId must be present and not just whitespace
+  if (sensorId === undefined || sensorId === null || String(sensorId).trim() === '') {
     return res.status(400).json({
       success: false,
       error: 'sensorId is required'
     });
   }
 
-  // value must be present
+  // value must be present (note: 0 is allowed, so check explicitly)
   if (value === undefined || value === null || value === '') {
     return res.status(400).json({
       success: false,
@@ -51,7 +54,7 @@ router.post('/reading', function(req, res) {
     });
   }
 
-  // value must be a number
+  // value must be a number (rejects 'abc', empty objects, etc.)
   if (isNaN(value)) {
     return res.status(400).json({
       success: false,
@@ -68,9 +71,10 @@ router.post('/reading', function(req, res) {
     });
   }
 
-  // find the sensor
+  // find the sensor (trim the id so trailing spaces still match)
+  var cleanId = String(sensorId).trim();
   var sensor = sensors.find(function(s) {
-    return s.id === sensorId;
+    return s.id === cleanId;
   });
 
   if (!sensor) {
