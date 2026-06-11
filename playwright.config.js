@@ -1,5 +1,8 @@
 const { defineConfig } = require('@playwright/test');
 
+// CI sets CI=true automatically, used to switch to headless fast mode
+var isCI = process.env.CI === 'true';
+
 module.exports = defineConfig({
   testDir: './e2e',
   timeout: 30000,
@@ -11,17 +14,16 @@ module.exports = defineConfig({
 
   use: {
     baseURL: 'http://localhost:3000',
-    headless: false,
-    slowMo: 2000,
+    // headless in CI, visible locally so you can watch tests run
+    headless: isCI ? true : false,
+    // no slow motion in CI, slowed down locally for visibility
+    slowMo: isCI ? 0 : 1000,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    viewport: { width: 1280, height: 720 },
-    launchOptions: {
-      args: ['--start-maximized'],
-      slowMo: 2000
-    }
+    viewport: { width: 1280, height: 720 }
   },
 
+  // Playwright starts the server automatically before running tests
   webServer: {
     command: 'node server.js',
     url: 'http://localhost:3000',

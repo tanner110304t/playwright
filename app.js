@@ -1,16 +1,19 @@
 const express = require('express');
 const path = require('path');
-const sensorsRoutes = require('./routes/sensors');
+const sensorRoutes = require('./routes/sensors');
 
 const app = express();
 
+// Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api/sensors', sensorsRoutes);
+// Routes
+app.use('/api/sensors', sensorRoutes);
 
-app.get('/api/health', function(req, res){
-    res.json({ status: 'ok', message: 'Environmental Monitor API is functional' });
+// Health check
+app.get('/api/health', function(req, res) {
+  res.json({ status: 'ok', message: 'Environmental Monitor API is running' });
 });
 
-module.exports = app
+module.exports = app;
